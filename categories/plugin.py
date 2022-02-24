@@ -150,7 +150,7 @@ class CategoriesPlugin(BasePlugin):
         for category in self.categories.values():
             joined = "\n".join(map(
                 lambda p: f"- [{p['title']}](/{p['url']})",
-                sorted(category['pages'])
+                sorted(category['pages'], key=lambda p: p['title'])
             ))
 
             file_name = f"{category['slug']}.md"

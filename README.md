@@ -93,6 +93,10 @@ The page identified did not contain a valid categories configuration object. Ple
 
 ## Changelog
 
+### 0.1.1
+
+Fixed a breaking bug caused by passing the wrong data into `sorted`.
+
 ### 0.1.0
 
 Initial release with all of the base logic in place.

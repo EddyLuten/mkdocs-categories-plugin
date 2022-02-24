@@ -7,7 +7,7 @@ long_description = (this_directory / 'README.md').read_text()
 
 setup(
     name='mkdocs-categories-plugin',
-    version='0.1.0',
+    version='0.1.1',
     description=
     'An MkDocs plugin allowing for categorization of pages',
     long_description=long_description,
