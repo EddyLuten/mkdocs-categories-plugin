@@ -49,11 +49,18 @@ You may customize the plugin by passing options into the plugin's configuration 
 ```yaml
 plugins:
     - categories:
+        generate_index: true
         verbose: false
         base_name: 'categories'
         section_title: 'Categories'
         no_nav: false
 ```
+
+### `generate_index`
+
+**Default:** `true`
+
+If true, an index page listing all of the generated categories is created at the `base_name` URL.
 
 ### `verbose`
 
@@ -92,6 +99,10 @@ A fatal error must have occurred during the compilation of your site and left th
 The page identified did not contain a valid categories configuration object. Please make sure that this is an array of strings.
 
 ## Changelog
+
+### 0.2.0
+
+Introduces support for the automatic generation of category index pages. This new default behavior can be turned off using an option.
 
 ### 0.1.1
 

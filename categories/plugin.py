@@ -3,26 +3,30 @@
 An MkDocs plugin allowing for categorization of pages in your wiki.
 """
 
-import shutil
-import re
 import logging
+import re
+import shutil
 import unicodedata
+from logging import Logger, getLogger
 from pathlib import Path
+
+from mkdocs.config import config_options
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File
-from mkdocs.utils import meta, get_markdown_title
-from mkdocs.config import config_options
+from mkdocs.structure.pages import Page
+from mkdocs.utils import get_markdown_title, meta
 
-def get_page_title(page_src, meta_data):
+
+def get_page_title(page_src: str, meta_data: dict) -> str:
     """Returns the title of the page. The title in the meta data section
     will take precedence over the H1 markdown title if both are provided."""
-    return (
+    return str(
         meta_data['title']
         if 'title' in meta_data and isinstance(meta_data['title'], str)
-        else get_markdown_title(page_src)
+        else get_markdown_title(page_src) or ''
     )
 
-def slugify(title):
+def slugify(title: str) -> str:
     """Returns the path slug used for the category URL.
     Adapted from django.utils.text"""
     slug = unicodedata.normalize('NFKD', str(title)).encode('ascii', 'ignore').decode('ascii')
@@ -31,18 +35,19 @@ def slugify(title):
 
 class CategoriesPlugin(BasePlugin):
     """
-    TODO
+    Defines the exported MkDocs plugin class and all its functionality.
     """
     config_scheme = (
+        ('generate_index', config_options.Type(bool, default=True)),
         ('verbose', config_options.Type(bool, default=False)),
         ('no_nav', config_options.Type(bool, default=False)),
         ('base_name', config_options.Type(str, default='categories')),
         ('section_title', config_options.Type(str, default='Categories'))
     )
-    categories = {}
-    pages = {}
-    log = logging.getLogger(f'mkdocs.plugins.{__name__}')
-    cat_path = Path()
+    log: Logger = getLogger(f'mkdocs.plugins.{__name__}')
+    categories: dict = {}
+    pages:dict = {}
+    cat_path: Path = Path()
 
     def on_config(self, _):
         """Set the log level if the verbose config option is set"""
@@ -83,7 +88,7 @@ class CategoriesPlugin(BasePlugin):
         self.categories.clear()
         self.clean_temp_dir()
 
-    def on_page_markdown(self, markdown, page, **_):
+    def on_page_markdown(self, markdown: str, page: Page, **_):
         """Replaces any alias tags on the page with markdown links."""
         if page.file.url not in self.pages:
             return markdown
@@ -97,25 +102,25 @@ class CategoriesPlugin(BasePlugin):
             "\n".join(links)
         )
 
-    def add_category(self, cat_name):
+    def add_category(self, cat_name: str) -> None:
         """Register a category if it does not yet exist."""
         if cat_name in self.categories:
             return
         slugified = slugify(cat_name)
         self.categories[cat_name] = {
-            'name': cat_name,
-            'slug': slugified,
+            'name':  cat_name,
+            'slug':  slugified,
             'pages': []
         }
         self.log.info('Defined new category "%s" with slug "%s"', cat_name, slugified)
 
-    def register_page(self, cat_name, page_url, page_title):
+    def register_page(self, cat_name: str, page_url: str, page_title: str) -> None:
         """Register a page and, if it does not exist, its category."""
         # Each category stores which pages belong to it
         self.add_category(cat_name)
         self.categories[cat_name]['pages'].append({
             'title': page_title,
-            'url': page_url
+            'url':   page_url
         })
 
         # Each page also stores which categories it belongs to
@@ -123,7 +128,7 @@ class CategoriesPlugin(BasePlugin):
             self.pages[page_url] = set()
         self.pages[page_url].add(cat_name)
 
-    def define_categories(self, files):
+    def define_categories(self, files) -> None:
         """Read all of the meta data and define any categories."""
         for file in filter(lambda f: f.is_documentation_page(), files):
             with open(file.abs_src_path, encoding='utf-8') as handle:
@@ -133,16 +138,44 @@ class CategoriesPlugin(BasePlugin):
                 if not isinstance(meta_data['categories'], list):
                     self.log.error(
                         'The categories object at %s was not a list, but %s',
-                        file.url,
+                        str(file.url),
                         type(meta_data['categories'].__name__)
                     )
                     continue
                 for category in meta_data['categories']:
                     self.register_page(
-                        category,
-                        file.url,
+                        str(category),
+                        str(file.url),
                         get_page_title(source, meta_data)
                     )
+
+    def generate_index(self, config) -> File:
+        """Generates a categories index page if the option is set."""
+        joined = "\n".join(map(
+            lambda c: f"- [{c['name']}](/{str(self.cat_path / c['slug'])}) ({len(c['pages'])})",
+            sorted(self.categories.values(), key=lambda c: c['name'])
+        ))
+        with open(self.cat_path / 'index.md', mode="w", encoding='utf-8') as file:
+            file.write(
+                "# All Categories\n\n"
+                "\n"
+                f"There are a total of {len(self.categories.keys())} categories(s):\n"
+                "\n"
+                f"{joined}\n"
+            )
+        return File(
+            path               = str(self.cat_path / 'index.md'),
+            src_dir            = str(self.cat_path.parent),
+            dest_dir           = config['site_dir'],
+            use_directory_urls = True
+        )
+
+    def all_categories_link(self) -> str:
+        """Generates a link to the categories index page if the option is set"""
+        return (
+            '' if not self.config['generate_index']
+            else f"[All Categories](/{str(self.cat_path)})\n\n"
+        )
 
     def on_files(self, files, config, **_):
         """When MkDocs loads its files, load any defined categories."""
@@ -158,16 +191,19 @@ class CategoriesPlugin(BasePlugin):
                 file.write(
                     f"# {category['name']}\n"
                     "\n"
+                    + self.all_categories_link() +
                     f"This category contains {len(category['pages'])} page(s):\n"
                     "\n"
                     f"{joined}\n"
                 )
 
             outfile = File(
-                path = str(Path(self.config['base_name']) / file_name),
-                src_dir = str(self.cat_path.parent),
-                dest_dir = config['site_dir'],
+                path               = str(Path(self.config['base_name']) / file_name),
+                src_dir            = str(self.cat_path.parent),
+                dest_dir           = config['site_dir'],
                 use_directory_urls = True
             )
             files.append(outfile)
+        if self.config['generate_index']:
+            files.append(self.generate_index(config))
         return files
