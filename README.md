@@ -100,6 +100,10 @@ The page identified did not contain a valid categories configuration object. Ple
 
 ## Changelog
 
+### 0.2.1
+
+Patch release: implements a bug fix by @rpmzandwijk reported in [#1](https://github.com/EddyLuten/mkdocs-categories-plugin/issues/1).
+
 ### 0.2.0
 
 Introduces support for the automatic generation of category index pages. This new default behavior can be turned off using an option.

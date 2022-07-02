@@ -14,7 +14,7 @@ from mkdocs.config import config_options
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File
 from mkdocs.structure.pages import Page
-from mkdocs.utils import get_markdown_title, meta
+from mkdocs.utils import get_markdown_title, get_relative_url, meta
 
 
 def get_page_title(page_src: str, meta_data: dict) -> str:
@@ -89,11 +89,12 @@ class CategoriesPlugin(BasePlugin):
         self.clean_temp_dir()
 
     def on_page_markdown(self, markdown: str, page: Page, **_):
+        relative_url = get_relative_url(str(self.cat_path), page.file.url)
         """Replaces any alias tags on the page with markdown links."""
         if page.file.url not in self.pages:
             return markdown
         links = list(map(
-            lambda c: f"- [{c}](/{self.cat_path / self.categories[c]['slug']})",
+            lambda c: f"- [{c}]({relative_url}/{self.categories[c]['slug']})",
             sorted(self.pages[page.file.url])
         ))
         return (
@@ -152,7 +153,7 @@ class CategoriesPlugin(BasePlugin):
     def generate_index(self, config) -> File:
         """Generates a categories index page if the option is set."""
         joined = "\n".join(map(
-            lambda c: f"- [{c['name']}](/{str(self.cat_path / c['slug'])}) ({len(c['pages'])})",
+            lambda c: f"- [{c['name']}]({str(c['slug'])}/) ({len(c['pages'])})",
             sorted(self.categories.values(), key=lambda c: c['name'])
         ))
         with open(self.cat_path / 'index.md', mode="w", encoding='utf-8') as file:
@@ -174,7 +175,7 @@ class CategoriesPlugin(BasePlugin):
         """Generates a link to the categories index page if the option is set"""
         return (
             '' if not self.config['generate_index']
-            else f"[All Categories](/{str(self.cat_path)})\n\n"
+            else f"[All Categories](../)\n\n"
         )
 
     def on_files(self, files, config, **_):
@@ -182,7 +183,7 @@ class CategoriesPlugin(BasePlugin):
         self.define_categories(files)
         for category in self.categories.values():
             joined = "\n".join(map(
-                lambda p: f"- [{p['title']}](/{p['url']})",
+                lambda p: f"- [{p['title']}](../../{p['url']}/)",
                 sorted(category['pages'], key=lambda p: p['title'])
             ))
 
