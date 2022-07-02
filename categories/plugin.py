@@ -89,8 +89,8 @@ class CategoriesPlugin(BasePlugin):
         self.clean_temp_dir()
 
     def on_page_markdown(self, markdown: str, page: Page, **_):
-        relative_url = get_relative_url(str(self.cat_path), page.file.url)
         """Replaces any alias tags on the page with markdown links."""
+        relative_url = get_relative_url(str(self.cat_path), page.file.url)
         if page.file.url not in self.pages:
             return markdown
         links = list(map(
@@ -175,7 +175,7 @@ class CategoriesPlugin(BasePlugin):
         """Generates a link to the categories index page if the option is set"""
         return (
             '' if not self.config['generate_index']
-            else f"[All Categories](../)\n\n"
+            else "[All Categories](../)\n\n"
         )
 
     def on_files(self, files, config, **_):
