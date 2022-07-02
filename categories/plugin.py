@@ -89,12 +89,12 @@ class CategoriesPlugin(BasePlugin):
         self.clean_temp_dir()
 
     def on_page_markdown(self, markdown: str, page: Page, **_):
-        """Replaces any alias tags on the page with markdown links."""
+        """Appends the category links section for a page to the markdown."""
         relative_url = get_relative_url(str(self.cat_path), page.file.url)
         if page.file.url not in self.pages:
             return markdown
         links = list(map(
-            lambda c: f"- [{c}]({relative_url}/{self.categories[c]['slug']})",
+            lambda c: f"- [{c}]({relative_url}/{self.categories[c]['slug']}/)",
             sorted(self.pages[page.file.url])
         ))
         return (
@@ -121,7 +121,7 @@ class CategoriesPlugin(BasePlugin):
         self.add_category(cat_name)
         self.categories[cat_name]['pages'].append({
             'title': page_title,
-            'url':   page_url
+            'url':   f"{page_url}{'' if page_url.endswith('/') else '/'}"
         })
 
         # Each page also stores which categories it belongs to
@@ -183,7 +183,7 @@ class CategoriesPlugin(BasePlugin):
         self.define_categories(files)
         for category in self.categories.values():
             joined = "\n".join(map(
-                lambda p: f"- [{p['title']}](../../{p['url']}/)",
+                lambda p: f"- [{p['title']}](../../{p['url']})",
                 sorted(category['pages'], key=lambda p: p['title'])
             ))
 
