@@ -8,7 +8,7 @@ If you like this MkDocs plugin, you'll probably also like [mkdocs-alias-plugin](
 
 ## Installation
 
-Install the package using pip:
+Using Python 3.10 or greater, install the package using pip:
 
 ```zsh
 pip install mkdocs-categories-plugin
@@ -125,7 +125,7 @@ The page identified did not contain a valid categories configuration object. Ple
 
 ### 0.3.0
 
-Added support for subcategories.
+Added support for subcategories. Python 3.10 or higher is now required.
 
 ### 0.2.1
 
