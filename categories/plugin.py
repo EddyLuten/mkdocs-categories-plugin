@@ -42,7 +42,8 @@ class CategoriesPlugin(BasePlugin):
         ('verbose', config_options.Type(bool, default=False)),
         ('no_nav', config_options.Type(bool, default=False)),
         ('base_name', config_options.Type(str, default='categories')),
-        ('section_title', config_options.Type(str, default='Categories'))
+        ('section_title', config_options.Type(str, default='Categories')),
+        ('category_separator', config_options.Type(str, default='|')),
     )
     log: Logger = getLogger(f'mkdocs.plugins.{__name__}')
     categories: dict = {}
@@ -77,24 +78,29 @@ class CategoriesPlugin(BasePlugin):
                 break
         return nav
 
-    def on_build_error(self, **_):
+    def on_build_error(self, _error):
         """Executed after the build has failed."""
         self.categories.clear()
+        self.pages.clear()
         self.clean_temp_dir()
 
     def on_post_build(self, **_):
         """Executed after the build has successfully completed."""
         self.log.info("Defined %s categories.", len(self.categories))
         self.categories.clear()
+        self.pages.clear()
         self.clean_temp_dir()
 
-    def on_page_markdown(self, markdown: str, page: Page, **_):
+    def on_page_markdown(self, markdown: str, *, page: Page, **_):
         """Appends the category links section for a page to the markdown."""
         relative_url = get_relative_url(str(self.cat_path), page.file.url)
         if page.file.url not in self.pages:
             return markdown
         links = list(map(
-            lambda c: f"- [{c}]({relative_url}/{self.categories[c]['slug']}/)",
+            lambda c: (
+                f"- [{self.categories[c]['name']}]"
+                f"({relative_url}/{self.categories[c]['slug']}/)"
+            ),
             sorted(self.pages[page.file.url])
         ))
         return (
@@ -103,23 +109,38 @@ class CategoriesPlugin(BasePlugin):
             "\n".join(links)
         )
 
-    def add_category(self, cat_name: str) -> None:
-        """Register a category if it does not yet exist."""
-        if cat_name in self.categories:
-            return
-        slugified = slugify(cat_name)
-        self.categories[cat_name] = {
-            'name':  cat_name,
-            'slug':  slugified,
-            'pages': []
-        }
-        self.log.info('Defined new category "%s" with slug "%s"', cat_name, slugified)
+    def ensure_path(self, cat_path: list[str]) -> dict|None:
+        """Ensure that the category path exists and return the last category."""
+        if len(cat_path) <= 0:
+            return None
+        result = {}
+        for i, cat_name in enumerate(cat_path):
+            cat_key = '-'.join(cat_path[:i + 1])
+            if cat_key not in self.categories:
+                slugified = slugify(cat_key)
+                self.categories[cat_key] = {
+                    'name':     cat_name,
+                    'key':      cat_key,
+                    'slug':     slugify(cat_key),
+                    'pages':    [],
+                    'parent':   '-'.join(cat_path[:i]) if i > 0 else None,
+                    'children': [],
+                }
+                self.log.info(
+                    'Defined new category "%s" with slug "%s"',
+                    cat_path[i],
+                    slugified
+                )
+            if len(result) > 0 and cat_key not in result['children']:
+                result['children'].append(cat_key)
+            result = self.categories[cat_key]
+        return result
 
-    def register_page(self, cat_name: str, page_url: str, page_title: str) -> None:
+    def register_page(self, cat_path: list[str], page_url: str, page_title: str) -> None:
         """Register a page and, if it does not exist, its category."""
         # Each category stores which pages belong to it
-        self.add_category(cat_name)
-        self.categories[cat_name]['pages'].append({
+        category = self.ensure_path(cat_path)
+        category['pages'].append({
             'title': page_title,
             'url':   f"{page_url}{'' if page_url.endswith('/') else '/'}"
         })
@@ -127,7 +148,7 @@ class CategoriesPlugin(BasePlugin):
         # Each page also stores which categories it belongs to
         if page_url not in self.pages:
             self.pages[page_url] = set()
-        self.pages[page_url].add(cat_name)
+        self.pages[page_url].add(category['key'])
 
     def define_categories(self, files) -> None:
         """Read all of the meta data and define any categories."""
@@ -145,7 +166,7 @@ class CategoriesPlugin(BasePlugin):
                     continue
                 for category in meta_data['categories']:
                     self.register_page(
-                        str(category),
+                        str(category).split(self.config['category_separator']),
                         str(file.url),
                         get_page_title(source, meta_data)
                     )
@@ -171,32 +192,58 @@ class CategoriesPlugin(BasePlugin):
             use_directory_urls = True
         )
 
-    def all_categories_link(self) -> str:
+    def render_all_categories_link(self) -> str:
         """Generates a link to the categories index page if the option is set"""
         return (
             '' if not self.config['generate_index']
             else "[All Categories](../)\n\n"
         )
 
-    def on_files(self, files, config, **_):
+    def render_child_categories(self, category: dict) -> tuple[bool, str]:
+        """Renders the child categories of a category."""
+        if len(category['children']) <= 0:
+            return False, None
+        joined = "\n".join(map(
+            lambda c: f"- [{self.categories[c]['name']}](../{self.categories[c]['slug']}/)",
+            sorted(category['children'])
+        ))
+        return True, joined
+
+    def render_category_pages(self, category: dict) -> tuple[bool, str]:
+        """Renders the pages of a category."""
+        if len(category['pages']) <= 0:
+            return False, None
+        joined = "\n".join(map(
+            lambda p: f"- [{p['title']}](../../{p['url']})",
+            sorted(category['pages'], key=lambda p: p['title'])
+        ))
+        return True, joined
+
+    def render_parent_category(self, category: dict) -> str:
+        """Renders the parent category of a category."""
+        if not category['parent']:
+            return None
+        parent = self.categories[category['parent']]
+        return f"[{parent['name']}](../{parent['slug']})"
+
+    def on_files(self, files, *, config, **_):
         """When MkDocs loads its files, load any defined categories."""
         self.define_categories(files)
         for category in self.categories.values():
-            joined = "\n".join(map(
-                lambda p: f"- [{p['title']}](../../{p['url']})",
-                sorted(category['pages'], key=lambda p: p['title'])
-            ))
-
             file_name = f"{category['slug']}.md"
+            (has_pages, pages) = self.render_category_pages(category)
+            (has_children, children) = self.render_child_categories(category)
+            parent = self.render_parent_category(category)
+
             with open(self.cat_path / file_name, mode="w", encoding='utf-8') as file:
-                file.write(
-                    f"# {category['name']}\n"
-                    "\n"
-                    + self.all_categories_link() +
-                    f"This category contains {len(category['pages'])} page(s):\n"
-                    "\n"
-                    f"{joined}\n"
-                )
+                file.write(''.join([
+                    f"# Category: {category['name']}\n\n",
+                    (f"Parent category: {parent}\n\n" if parent else ''),
+                    (f"##Subcategories\n\n{children}\n\n" if has_children else ''),
+                    f"## Pages in category \"{category['name']}\"\n\n",
+                    f"{pages if has_pages else 'This category has no pages.'}\n\n",
+                    self.render_all_categories_link(),
+                ]))
 
             outfile = File(
                 path               = str(Path(self.config['base_name']) / file_name),

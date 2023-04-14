@@ -38,9 +38,25 @@ categories:
 ---
 ```
 
-New pages will be generated for each of these categories, with a list of links to each of the wiki pages within the category. The names of these categories are slugified before used in the category URLs. For example, `19th Century Gothic Fiction` becomes `19th-century-gothic-fiction`.
+New pages will be generated for each of these categories, with a list of links to each of the wiki pages within the category. Subcategories, links to the parent category, and a link to the "All Categories" page are automatically generated and placed on the page.
+
+Category names are slugified before used in category URLs. For example, `19th Century Gothic Fiction` becomes `19th-century-gothic-fiction`.
 
 Please refer to the [MkDocs documentation](https://www.mkdocs.org/user-guide/writing-your-docs/#yaml-style-meta-data) for more information on how the meta-data block is used.
+
+### Subcategories
+
+As of version 0.3.0, mkdocs-categories-plugin supports subcategorization. This is achieved by supplying a category name that separates parent from child categories using a separator (by default `|`, configurable via `category_separator`). You may supply as many levels of child categories as you like.
+
+For example:
+
+```yaml
+categories:
+    - Fiction|Romance
+    - Fiction|Books|British Authors|Female|19th Century
+```
+
+The first category definition in this example places the page in the *Romance* subcategory of the *Fiction* parent category. Note that the page will **not** be placed in the parent category of *Fiction*, but only in the *Romance* category. The second category definition places the page in the *19th Century* category, but not in any of its ancestor categories.
 
 ## Options
 
@@ -54,6 +70,7 @@ plugins:
         base_name: 'categories'
         section_title: 'Categories'
         no_nav: false
+        category_separator: '|'
 ```
 
 ### `generate_index`
@@ -88,6 +105,12 @@ By default, mkdocs-categories-plugin will generate navigation entries for each c
 
 There's also a know issue with mkdocs-awesome-pages-plugin compatibility that does not allow you to reorder the position of the generated categories section by using a `.pages` file. If you would rather turn the navigation entries off entirely, this option is for you.
 
+### `category_separator`
+
+**Default:** `|`
+
+This string is used to split the category name in order to define a category hierarchy (see subcategories above).
+
 ## Troubleshooting
 
 ### There's a directory named `categories` in my project
@@ -99,6 +122,10 @@ A fatal error must have occurred during the compilation of your site and left th
 The page identified did not contain a valid categories configuration object. Please make sure that this is an array of strings.
 
 ## Changelog
+
+### 0.3.0
+
+Added support for subcategories.
 
 ### 0.2.1
 
