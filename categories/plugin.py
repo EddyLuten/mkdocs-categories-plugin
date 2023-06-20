@@ -10,6 +10,7 @@ import unicodedata
 from logging import Logger, getLogger
 from pathlib import Path
 
+from natsort import natsorted
 from mkdocs.config import config_options
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File
@@ -101,7 +102,7 @@ class CategoriesPlugin(BasePlugin):
                 f"- [{self.categories[c]['name']}]"
                 f"({relative_url}/{self.categories[c]['slug']}/)"
             ),
-            sorted(self.pages[page.file.url])
+            natsorted(self.pages[page.file.url])
         ))
         return (
             markdown +
@@ -175,7 +176,7 @@ class CategoriesPlugin(BasePlugin):
         """Generates a categories index page if the option is set."""
         joined = "\n".join(map(
             lambda c: f"- [{c['name']}]({str(c['slug'])}/) ({len(c['pages'])})",
-            sorted(self.categories.values(), key=lambda c: c['name'])
+            natsorted(self.categories.values(), key=lambda c: c['name'])
         ))
         with open(self.cat_path / 'index.md', mode="w", encoding='utf-8') as file:
             file.write(
@@ -205,7 +206,7 @@ class CategoriesPlugin(BasePlugin):
             return False, None
         joined = "\n".join(map(
             lambda c: f"- [{self.categories[c]['name']}](../{self.categories[c]['slug']}/)",
-            sorted(category['children'])
+            natsorted(category['children'])
         ))
         return True, joined
 
@@ -215,7 +216,7 @@ class CategoriesPlugin(BasePlugin):
             return False, None
         joined = "\n".join(map(
             lambda p: f"- [{p['title']}](../../{p['url']})",
-            sorted(category['pages'], key=lambda p: p['title'])
+            natsorted(category['pages'], key=lambda p: p['title'])
         ))
         return True, joined
 

@@ -7,7 +7,7 @@ long_description = (this_directory / 'README.md').read_text()
 
 setup(
     name='mkdocs-categories-plugin',
-    version='0.3.0',
+    version='0.4.0',
     description=
     'An MkDocs plugin allowing for categorization of pages',
     long_description=long_description,
@@ -18,7 +18,10 @@ setup(
     author_email='eddyluten@gmail.com',
     license='MIT',
     python_requires='>=3.10',
-    install_requires=['mkdocs'],
+    install_requires=[
+        'mkdocs',
+        'natsort>=8.4.0'
+    ],
     classifiers=[
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',

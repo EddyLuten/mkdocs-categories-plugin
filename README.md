@@ -123,6 +123,10 @@ The page identified did not contain a valid categories configuration object. Ple
 
 ## Changelog
 
+### 0.4.0
+
+Fixes sorting categories, child pages, etc. containing numbers by using natural sorting from the `natsort` package rather than the default sorting function.
+
 ### 0.3.0
 
 Added support for subcategories. Python 3.10 or higher is now required.
