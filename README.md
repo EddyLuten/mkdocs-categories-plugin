@@ -4,7 +4,7 @@
 
 An MkDocs plugin allowing for categorization of pages in your wiki. This plugin allows for multiple categories per page and will generate a category index page with links to each page within the category.
 
-If you like this MkDocs plugin, you'll probably also like [mkdocs-alias-plugin](https://github.com/EddyLuten/mkdocs-alias-plugin).
+If you like this MkDocs plugin, you'll probably also like [mkdocs-alias-plugin](https://github.com/EddyLuten/mkdocs-alias-plugin) and [mkdocs-live-edit-plugin](https://github.com/EddyLuten/mkdocs-live-edit-plugin).
 
 ## Installation
 
