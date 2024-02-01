@@ -89,7 +89,7 @@ You may use the optional `verbose` option to print more information about which 
 
 **Default:** `categories`
 
-A string used to both serve as the URL base for the category pages as well as the navigation section that's automatically generated. Since this sting is used in the generated category URL, please ensure that it only contains URL friendly characters.
+A string that's used to both serve as the URL base for the category pages as well as the navigation section that's automatically generated. Since this string is used in the generated category URL, please ensure that it only contains URL-friendly characters.
 
 ### `section_title`
 
@@ -122,6 +122,10 @@ A fatal error must have occurred during the compilation of your site and left th
 The page identified did not contain a valid categories configuration object. Please make sure that this is an array of strings.
 
 ## Changelog
+
+### 0.5.0
+
+Fixes many build info warnings about absolute paths due to MkDocs' improved validation. Made the links that are generated more correct.
 
 ### 0.4.0
 

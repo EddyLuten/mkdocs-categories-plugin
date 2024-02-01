@@ -45,6 +45,7 @@ class CategoriesPlugin(BasePlugin):
         ('base_name', config_options.Type(str, default='categories')),
         ('section_title', config_options.Type(str, default='Categories')),
         ('category_separator', config_options.Type(str, default='|')),
+        ('debug_fs', config_options.Type(bool, default=False)),
     )
     log: Logger = getLogger(f'mkdocs.plugins.{__name__}')
     categories: dict = {}
@@ -63,6 +64,9 @@ class CategoriesPlugin(BasePlugin):
 
     def clean_temp_dir(self):
         """Remove the temporary directory after execution."""
+        if self.config['debug_fs']:
+            self.log.info("Debugging: Not removing temporary directory.")
+            return
         shutil.rmtree(self.cat_path)
 
     def on_nav(self, nav, **_):
@@ -79,7 +83,7 @@ class CategoriesPlugin(BasePlugin):
                 break
         return nav
 
-    def on_build_error(self, _error):
+    def on_build_error(self, **_):
         """Executed after the build has failed."""
         self.categories.clear()
         self.pages.clear()
@@ -94,15 +98,15 @@ class CategoriesPlugin(BasePlugin):
 
     def on_page_markdown(self, markdown: str, *, page: Page, **_):
         """Appends the category links section for a page to the markdown."""
-        relative_url = get_relative_url(str(self.cat_path), page.file.url)
-        if page.file.url not in self.pages:
+        relative_url = get_relative_url(str(self.cat_path), page.file.src_uri)
+        if page.file.src_uri not in self.pages:
             return markdown
         links = list(map(
             lambda c: (
                 f"- [{self.categories[c]['name']}]"
-                f"({relative_url}/{self.categories[c]['slug']}/)"
+                f"({relative_url}/{self.categories[c]['slug']}.md)"
             ),
-            natsorted(self.pages[page.file.url])
+            natsorted(self.pages[page.file.src_uri])
         ))
         return (
             markdown +
@@ -143,7 +147,7 @@ class CategoriesPlugin(BasePlugin):
         category = self.ensure_path(cat_path)
         category['pages'].append({
             'title': page_title,
-            'url':   f"{page_url}{'' if page_url.endswith('/') else '/'}"
+            'url':   page_url
         })
 
         # Each page also stores which categories it belongs to
@@ -161,21 +165,21 @@ class CategoriesPlugin(BasePlugin):
                 if not isinstance(meta_data['categories'], list):
                     self.log.error(
                         'The categories object at %s was not a list, but %s',
-                        str(file.url),
+                        str(file.src_path),
                         type(meta_data['categories'].__name__)
                     )
                     continue
                 for category in meta_data['categories']:
                     self.register_page(
                         str(category).split(self.config['category_separator']),
-                        str(file.url),
+                        str(file.src_path),
                         get_page_title(source, meta_data)
                     )
 
     def generate_index(self, config) -> File:
         """Generates a categories index page if the option is set."""
         joined = "\n".join(map(
-            lambda c: f"- [{c['name']}]({str(c['slug'])}/) ({len(c['pages'])})",
+            lambda c: f"- [{c['name']}](./{str(c['slug'])}.md) ({len(c['pages'])})",
             natsorted(self.categories.values(), key=lambda c: c['name'])
         ))
         with open(self.cat_path / 'index.md', mode="w", encoding='utf-8') as file:
@@ -197,7 +201,7 @@ class CategoriesPlugin(BasePlugin):
         """Generates a link to the categories index page if the option is set"""
         return (
             '' if not self.config['generate_index']
-            else "[All Categories](../)\n\n"
+            else "[All Categories](./index.md)\n\n"
         )
 
     def render_child_categories(self, category: dict) -> tuple[bool, str]:
@@ -205,7 +209,7 @@ class CategoriesPlugin(BasePlugin):
         if len(category['children']) <= 0:
             return False, None
         joined = "\n".join(map(
-            lambda c: f"- [{self.categories[c]['name']}](../{self.categories[c]['slug']}/)",
+            lambda c: f"- [{self.categories[c]['name']}](./{self.categories[c]['slug']}.md)",
             natsorted(category['children'])
         ))
         return True, joined
@@ -215,7 +219,7 @@ class CategoriesPlugin(BasePlugin):
         if len(category['pages']) <= 0:
             return False, None
         joined = "\n".join(map(
-            lambda p: f"- [{p['title']}](../../{p['url']})",
+            lambda p: f"- [{p['title']}](../{p['url']})",
             natsorted(category['pages'], key=lambda p: p['title'])
         ))
         return True, joined
@@ -225,7 +229,7 @@ class CategoriesPlugin(BasePlugin):
         if not category['parent']:
             return None
         parent = self.categories[category['parent']]
-        return f"[{parent['name']}](../{parent['slug']})"
+        return f"[{parent['name']}](./{parent['slug']}.md)"
 
     def on_files(self, files, *, config, **_):
         """When MkDocs loads its files, load any defined categories."""
@@ -240,7 +244,7 @@ class CategoriesPlugin(BasePlugin):
                 file.write(''.join([
                     f"# Category: {category['name']}\n\n",
                     (f"Parent category: {parent}\n\n" if parent else ''),
-                    (f"##Subcategories\n\n{children}\n\n" if has_children else ''),
+                    (f"## Subcategories\n\n{children}\n\n" if has_children else ''),
                     f"## Pages in category \"{category['name']}\"\n\n",
                     f"{pages if has_pages else 'This category has no pages.'}\n\n",
                     self.render_all_categories_link(),
