@@ -69,7 +69,7 @@ class CategoriesPlugin(BasePlugin):
             return
         shutil.rmtree(self.cat_path)
 
-    def on_nav(self, nav, **_):
+    def on_nav(self, nav, /, **_):
         """
         Executed when the navigation is created. If the config option no_nav
         is set to true, the categories section will be removed from the global
@@ -96,7 +96,7 @@ class CategoriesPlugin(BasePlugin):
         self.pages.clear()
         self.clean_temp_dir()
 
-    def on_page_markdown(self, markdown: str, *, page: Page, **_):
+    def on_page_markdown(self, markdown: str, /, *, page: Page, **_):
         """Appends the category links section for a page to the markdown."""
         relative_url = get_relative_url(str(self.cat_path), page.file.src_uri)
         if page.file.src_uri not in self.pages:
@@ -231,7 +231,7 @@ class CategoriesPlugin(BasePlugin):
         parent = self.categories[category['parent']]
         return f"[{parent['name']}](./{parent['slug']}.md)"
 
-    def on_files(self, files, *, config, **_):
+    def on_files(self, files, /, *, config, **_):
         """When MkDocs loads its files, load any defined categories."""
         self.define_categories(files)
         for category in self.categories.values():
