@@ -20,7 +20,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pylint mkdocs natsort
+        pip install pylint mkdocs natsort setuptools
     - name: Analyzing the code with pylint
       run: |
         pylint $(git ls-files '*.py')
