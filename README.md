@@ -111,6 +111,12 @@ There's also a know issue with mkdocs-awesome-pages-plugin compatibility that do
 
 This string is used to split the category name in order to define a category hierarchy (see subcategories above).
 
+### `show_breadcrumbs`
+
+**Default:** `False`
+
+When set to true, breadcrumb links to each category in the category's lineage are displayed. The breadcrumb separator string may be customized by setting the `breadcrumb_separator` option to the desired string (the default is ">").
+
 ## Troubleshooting
 
 ### There's a directory named `categories` in my project
@@ -143,6 +149,11 @@ pylint $(git ls-files '*.py')
 ```
 
 ## Changelog
+
+### 0.6.0
+
+- Adds support for breadcrumbs using the newly added `show_breadcrumbs` option.
+- Enhanced the display of hierarchical categories on the "All Categories" page.
 
 ### 0.5.0
 
