@@ -209,14 +209,38 @@ class CategoriesPlugin(BasePlugin):
                         get_page_title(source, meta_data),
                     )
 
+    def get_category_by_parent(self, parent_key: str | None) -> list[dict]:
+        """Returns a list of categories with the given parent key."""
+        return list(
+            filter(lambda c: c["parent"] == parent_key, self.categories.values())
+        )
+
+    def render_category_hierarchy(self, parent_key: str | None, indent_level: int = 0) -> list[str]:
+        """Recursively renders categories and their children with proper indentation."""
+        lines = []
+        children = self.get_category_by_parent(parent_key)
+        sorted_children = natsorted(children, key=lambda c: c["name"])
+
+        for category in sorted_children:
+            # doesn't work with only two spaces...
+            indent = "    " * indent_level
+            link = f"[{category['name']}](./{category['slug']}.md)"
+            page_count = f" ({len(category['pages'])})"
+            lines.append(f"{indent}- {link}{page_count}")
+
+            # Recursively render children
+            lines.extend(self.render_category_hierarchy(category["key"], indent_level + 1))
+
+        return lines
+
     def generate_index(self, config) -> File:
         """Generates a categories index page if the option is set."""
-        joined = "\n".join(
-            map(
-                lambda c: f"- [{c['name']}](./{str(c['slug'])}.md) ({len(c['pages'])})",
-                natsorted(self.categories.values(), key=lambda c: c["name"]),
-            )
-        )
+        hierarchy_lines = self.render_category_hierarchy(None)
+        joined = "\n".join(hierarchy_lines)
+        # log the hierarchy if verbose logging is enabled
+        if self.config["verbose"]:
+            self.log.info("Generated category hierarchy:\n%s", joined)
+
         with open(self.cat_path / "index.md", mode="w", encoding="utf-8") as file:
             file.write(
                 "# All Categories\n\n"
