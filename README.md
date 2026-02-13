@@ -121,6 +121,27 @@ A fatal error must have occurred during the compilation of your site and left th
 
 The page identified did not contain a valid categories configuration object. Please make sure that this is an array of strings.
 
+## Local Development
+
+Upgrade pip and install the dependencies:
+
+```zsh
+python -m pip install --upgrade pip
+pip install pylint mkdocs natsort setuptools
+```
+
+Installing a local copy of the plugin (potentially from your MkDoc's venv location):
+
+```zsh
+pip install -e /path/to/mkdocs-alias-plugin/
+```
+
+Run the linter:
+
+```zsh
+pylint $(git ls-files '*.py')
+```
+
 ## Changelog
 
 ### 0.5.0
