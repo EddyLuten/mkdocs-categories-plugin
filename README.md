@@ -12,7 +12,7 @@
 
 The mkdocs-categories-plugin MkDocs plugin allows for categorization of pages in your wiki. This plugin allows for multiple categories per page and will generate a category index page with links to each page within the category.
 
-If you like this MkDocs plugin, you'll probably also like [mkdocs-alias-plugin](https://alias.luten.dev/) and [mkdocs-live-edit-plugin](https://pypi.org/project/mkdocs-live-edit-plugin/).
+If you like this MkDocs plugin, you'll probably also like [mkdocs-alias-plugin](https://alias.luten.dev/) and [mkdocs-live-edit-plugin](https://live-edit.luten.dev/).
 
 ## Installation
 
