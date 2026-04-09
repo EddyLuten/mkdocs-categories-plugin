@@ -1,10 +1,18 @@
 # mkdocs-categories-plugin
 
-[![PyPI version](https://badge.fury.io/py/mkdocs-categories-plugin.svg)](https://pypi.org/project/mkdocs-categories-plugin/)  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![example workflow](https://github.com/eddyluten/mkdocs-categories-plugin/actions/workflows/pylint.yml/badge.svg) [![Downloads](https://pepy.tech/badge/mkdocs-categories-plugin)](https://pepy.tech/project/mkdocs-categories-plugin)
+[![PyPI version](https://badge.fury.io/py/mkdocs-categories-plugin.svg)](https://pypi.org/project/mkdocs-categories-plugin/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Downloads](https://pepy.tech/badge/mkdocs-categories-plugin)](https://pepy.tech/project/mkdocs-categories-plugin)
+![CI Status](https://codeberg.org/luten/mkdocs-alias-plugin/badges/workflows/ci.yml/badge.svg)
 
-An MkDocs plugin allowing for categorization of pages in your wiki. This plugin allows for multiple categories per page and will generate a category index page with links to each page within the category.
+> [!IMPORTANT]
+> This repository has moved to [Codeberg](https://codeberg.org/luten/mkdocs-categories-plugin).
+>
+> The GitHub **mirror** is synced automatically, but please file issues and pull requests on Codeberg. See the [CONTRIBUTING](CONTRIBUTING.md) file for details. All existing issues and pull requests have also migrated there.
 
-If you like this MkDocs plugin, you'll probably also like [mkdocs-alias-plugin](https://github.com/EddyLuten/mkdocs-alias-plugin) and [mkdocs-live-edit-plugin](https://github.com/EddyLuten/mkdocs-live-edit-plugin).
+The mkdocs-categories-plugin MkDocs plugin allows for categorization of pages in your wiki. This plugin allows for multiple categories per page and will generate a category index page with links to each page within the category.
+
+If you like this MkDocs plugin, you'll probably also like [mkdocs-alias-plugin](https://alias.luten.dev/) and [mkdocs-live-edit-plugin](https://pypi.org/project/mkdocs-live-edit-plugin/).
 
 ## Installation
 
@@ -148,7 +156,7 @@ Added support for subcategories. Python 3.10 or higher is now required.
 
 ### 0.2.1
 
-Patch release: implements a bug fix by @rpmzandwijk reported in [#1](https://github.com/EddyLuten/mkdocs-categories-plugin/issues/1).
+Patch release: implements a bug fix by @rpmzandwijk reported in [#1](https://codeberg.org/luten/mkdocs-categories-plugin/issues/1).
 
 ### 0.2.0
 

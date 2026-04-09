@@ -1,6 +1,6 @@
 # Contributing
 
-If you find a bug or wish to request a feature, feel free to open a [new issue](https://github.com/EddyLuten/mkdocs-categories-plugin/issues/new/choose).
+If you find a bug or wish to request a feature, feel free to open a [new issue](https://codeberg.org/luten/mkdocs-categories-plugin/issues/new).
 
 PRs are welcome and appreciated, but please _open an issue first_ to discuss the change you'd like to make first. PRs that haven't been discussed, or that fall outside the intended scope of this project, may be closed without merging.
 
