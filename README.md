@@ -3,7 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/mkdocs-categories-plugin.svg)](https://pypi.org/project/mkdocs-categories-plugin/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Downloads](https://pepy.tech/badge/mkdocs-categories-plugin)](https://pepy.tech/project/mkdocs-categories-plugin)
-![CI Status](https://codeberg.org/luten/mkdocs-alias-plugin/badges/workflows/ci.yml/badge.svg)
+![CI Status](https://codeberg.org/luten/mkdocs-categories-plugin/badges/workflows/ci.yml/badge.svg)
 
 > [!IMPORTANT]
 > This repository has moved to [Codeberg](https://codeberg.org/luten/mkdocs-categories-plugin).
